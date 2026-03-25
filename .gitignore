@@ -1,0 +1,30 @@
+# Data
+data/
+*.csv
+
+# Secrets
+.env
+keys/
+/tmp/
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+
+# Go
+tmp/
+
+# Node
+node_modules/
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
