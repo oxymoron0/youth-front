@@ -10,6 +10,7 @@ import {
   ImageryLayer,
 } from 'cesium';
 import 'cesium/Build/Cesium/Widgets/widgets.css';
+import { env } from '../env';
 
 interface ViewerContextValue {
   viewer: Viewer | null;
@@ -43,10 +44,10 @@ export default function MetroViewer({ children }: { children?: ReactNode }) {
   const lod4TilesetRef = useRef<Cesium3DTileset | null>(null);
 
   useEffect(() => {
-    const token = import.meta.env.VITE_CESIUM_TOKEN;
+    const token = env('VITE_CESIUM_TOKEN');
     if (token) Ion.defaultAccessToken = token;
 
-    const googleKey = import.meta.env.VITE_GOOGLE_MAPS_KEY;
+    const googleKey = env('VITE_GOOGLE_MAPS_KEY');
     if (googleKey) GoogleMaps.defaultApiKey = googleKey;
 
     if (!containerRef.current) return;
