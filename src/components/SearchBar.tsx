@@ -4,9 +4,10 @@ import { getLineColor } from '../constants/lineColors';
 
 interface SearchBarProps {
   onSelect: (stationId: number, lon: number, lat: number) => void;
+  embedded?: boolean;
 }
 
-export default function SearchBar({ onSelect }: SearchBarProps) {
+export default function SearchBar({ onSelect, embedded = false }: SearchBarProps) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const { results, loading } = useSearch(query);
@@ -27,13 +28,24 @@ export default function SearchBar({ onSelect }: SearchBarProps) {
   }, [results]);
 
   return (
-    <div ref={wrapperRef} className="absolute left-1/2 top-3 z-20 w-80 -translate-x-1/2">
+    <div
+      ref={wrapperRef}
+      className={
+        embedded
+          ? 'relative w-full'
+          : 'absolute left-1/2 top-3 z-20 w-80 -translate-x-1/2'
+      }
+    >
       <input
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search stations..."
-        className="w-full rounded-lg border border-gray-300 bg-white/95 px-4 py-2 text-sm shadow-lg backdrop-blur focus:border-blue-500 focus:outline-none"
+        placeholder="역 검색..."
+        className={
+          embedded
+            ? 'w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none'
+            : 'w-full rounded-lg border border-gray-300 bg-white/95 px-4 py-2 text-sm shadow-lg backdrop-blur focus:border-blue-500 focus:outline-none'
+        }
         aria-label="Search stations"
       />
       {loading && (

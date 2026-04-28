@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import LineSelector from './LineSelector';
+import SearchBar from './SearchBar';
 import type { Line } from '../types';
 
 interface LeftPanelProps {
@@ -9,6 +10,7 @@ interface LeftPanelProps {
   visibleLines: Set<number>;
   onToggle: (lineId: number) => void;
   linesLoading: boolean;
+  onSearchSelect: (stationId: number, lon: number, lat: number) => void;
   children?: ReactNode;
 }
 
@@ -19,10 +21,11 @@ export default function LeftPanel({
   visibleLines,
   onToggle,
   linesLoading,
+  onSearchSelect,
   children,
 }: LeftPanelProps) {
   return (
-    <div className="absolute left-3 top-16 z-10 flex max-h-[calc(100vh-5rem)] w-72 flex-col rounded-lg bg-white/95 shadow-lg backdrop-blur">
+    <div className="absolute left-3 top-3 z-10 flex max-h-[calc(100vh-1.5rem)] w-72 flex-col rounded-lg bg-white/95 shadow-lg backdrop-blur">
       {/* Tab bar */}
       <div className="flex border-b border-gray-200 px-1 pt-1">
         <button
@@ -54,7 +57,8 @@ export default function LeftPanel({
           {children}
         </div>
         {/* Lines tab */}
-        <div className={activeTab === 'lines' ? '' : 'hidden'}>
+        <div className={activeTab === 'lines' ? 'space-y-3' : 'hidden'}>
+          <SearchBar onSelect={onSearchSelect} embedded />
           <LineSelector
             lines={lines}
             visibleLines={visibleLines}

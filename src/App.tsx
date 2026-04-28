@@ -3,12 +3,12 @@ import MetroViewer, { useViewer } from './components/MetroViewer';
 import StationLayer from './components/StationLayer';
 import ExitLayer from './components/ExitLayer';
 import LeftPanel from './components/LeftPanel';
-import SearchBar from './components/SearchBar';
 import SeoulDistrictLayer from './components/SeoulDistrictLayer';
 import HousingList from './components/HousingList';
 import HousingDetailView from './components/HousingDetailView';
 import HousingLayer from './components/HousingLayer';
 import NearStationHighlight from './components/NearStationHighlight';
+import SyncStatusIndicator from './components/SyncStatusIndicator';
 import { useStations } from './hooks/useStations';
 import { useLines } from './hooks/useLines';
 import { useSeoulDistricts } from './hooks/useSeoulDistricts';
@@ -134,7 +134,6 @@ function AppContent() {
         exits={selectedStation?.exits ?? []}
         stationId={selectedStation?.station_id ?? null}
       />
-      <SearchBar onSelect={handleSearchSelect} />
       <LeftPanel
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -142,6 +141,7 @@ function AppContent() {
         visibleLines={visibleLines}
         onToggle={handleToggleLine}
         linesLoading={linesLoading}
+        onSearchSelect={handleSearchSelect}
       >
         {selectedHomeCode ? (
           <HousingDetailView
@@ -172,6 +172,7 @@ function AppContent() {
         visible={districtEnabled}
         visibleDistricts={districtEnabled ? visibleDistricts : null}
       />
+      <SyncStatusIndicator />
     </>
   );
 }

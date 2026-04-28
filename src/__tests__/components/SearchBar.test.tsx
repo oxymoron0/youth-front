@@ -20,12 +20,12 @@ describe('SearchBar', () => {
 
   it('renders search input', () => {
     render(<SearchBar onSelect={onSelect} />);
-    expect(screen.getByPlaceholderText('Search stations...')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('역 검색...')).toBeInTheDocument();
   });
 
   it('handles input change', () => {
     render(<SearchBar onSelect={onSelect} />);
-    const input = screen.getByPlaceholderText('Search stations...');
+    const input = screen.getByPlaceholderText('역 검색...');
     fireEvent.change(input, { target: { value: 'Seoul' } });
     expect(input).toHaveValue('Seoul');
   });
@@ -46,7 +46,7 @@ describe('SearchBar', () => {
     });
 
     render(<SearchBar onSelect={onSelect} />);
-    const input = screen.getByPlaceholderText('Search stations...');
+    const input = screen.getByPlaceholderText('역 검색...');
     fireEvent.change(input, { target: { value: 'Se' } });
 
     await waitFor(() => {
@@ -70,7 +70,7 @@ describe('SearchBar', () => {
     });
 
     render(<SearchBar onSelect={onSelect} />);
-    fireEvent.change(screen.getByPlaceholderText('Search stations...'), {
+    fireEvent.change(screen.getByPlaceholderText('역 검색...'), {
       target: { value: 'Gang' },
     });
 
@@ -84,7 +84,7 @@ describe('SearchBar', () => {
   it('shows loading indicator', () => {
     mockUseSearch.mockReturnValue({ results: [], loading: true });
     render(<SearchBar onSelect={onSelect} />);
-    fireEvent.change(screen.getByPlaceholderText('Search stations...'), {
+    fireEvent.change(screen.getByPlaceholderText('역 검색...'), {
       target: { value: 'test' },
     });
     expect(screen.getByText('...')).toBeInTheDocument();

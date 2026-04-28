@@ -48,3 +48,24 @@ export const SUPPLY_STATUS_LABELS: Record<string, string> = {
 };
 
 export const AUTO_CHECK_STATUSES = ['01', '02', '03', '06'];
+
+export interface SyncResult {
+  fetched_count: number;
+  updated_count: number;
+  new_count: number;
+  duration_ms: number;
+  started_at: string;
+  completed_at: string;
+  error?: string | null;
+}
+
+export interface SyncLatestResponse {
+  status: 'ok' | 'error';
+  result: SyncResult;
+}
+
+export interface SyncHistoryResponse {
+  status: 'ok' | 'error';
+  count: number;
+  results: SyncResult[];
+}
