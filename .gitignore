@@ -29,3 +29,7 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# Playwright MCP artifacts
+.playwright-mcp/
+commit*-state.png
