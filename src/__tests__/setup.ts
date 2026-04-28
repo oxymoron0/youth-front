@@ -1,29 +1,47 @@
 import '@testing-library/jest-dom/vitest';
 
-// Mock Cesium module for tests
-vi.mock('cesium', () => ({
-  Viewer: vi.fn(),
-  Ion: { defaultAccessToken: '' },
-  Cartesian3: { fromDegrees: vi.fn(() => ({})) },
-  Math: { toRadians: vi.fn((x: number) => x) },
-  Color: {
-    fromCssColorString: vi.fn(() => ({})),
-    WHITE: {},
-    BLACK: {},
-    YELLOW: {},
-  },
-  CustomDataSource: vi.fn(() => ({
-    entities: { add: vi.fn(), removeAll: vi.fn() },
-  })),
-  PointGraphics: vi.fn(),
-  ScreenSpaceEventHandler: vi.fn(() => ({
-    setInputAction: vi.fn(),
-    destroy: vi.fn(),
-    isDestroyed: vi.fn(() => false),
-  })),
-  ScreenSpaceEventType: { LEFT_CLICK: 0 },
-  defined: vi.fn(),
-}));
+class FakeLatLng {
+  constructor(public lat: number, public lng: number) {}
+}
 
-// Mock cesium CSS
-vi.mock('cesium/Build/Cesium/Widgets/widgets.css', () => ({}));
+class FakePoint {
+  constructor(public x: number, public y: number) {}
+}
+
+class FakeMarker {
+  setMap(): void {}
+  setIcon(): void {}
+  setPosition(): void {}
+  setVisible(): void {}
+  setZIndex(): void {}
+}
+
+class FakePolygon {
+  setMap(): void {}
+  setPaths(): void {}
+}
+
+class FakeMap {
+  setCenter(): void {}
+  setZoom(): void {}
+  panTo(): void {}
+  morph(): void {}
+  getZoom(): number { return 12; }
+  destroy(): void {}
+}
+
+(globalThis as unknown as { naver: unknown }).naver = {
+  maps: {
+    LatLng: FakeLatLng,
+    Point: FakePoint,
+    Marker: FakeMarker,
+    Polygon: FakePolygon,
+    Map: FakeMap,
+    MapTypeId: { NORMAL: 'NORMAL', SATELLITE: 'SATELLITE', HYBRID: 'HYBRID' },
+    Event: {
+      addListener: () => ({ id: 0 }),
+      removeListener: () => {},
+      clearInstanceListeners: () => {},
+    },
+  },
+};
