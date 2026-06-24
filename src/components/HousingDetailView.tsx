@@ -78,15 +78,40 @@ export default function HousingDetailView({
 
   return (
     <div className="flex flex-col gap-3 text-sm">
-      {/* Back button */}
-      <button
-        onClick={onBack}
-        className="self-start text-xs text-blue-600 hover:underline"
-      >
-        &lt; 목록으로
-      </button>
+      {/* Hero image — 408x249 on desktop, full-bleed (Google Maps 스타일) */}
+      <div className="relative -mx-3 -mt-3 h-[249px] overflow-hidden bg-gray-100">
+        {detail.has_image ? (
+          <img
+            src={housingImageUrl(detail.home_code)}
+            alt={`${detail.home_name} 투시도`}
+            loading="lazy"
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-gray-300">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 10.5 12 3l9 7.5" />
+              <path d="M5 9.5V21h14V9.5" />
+              <path d="M9.5 21v-6h5v6" />
+            </svg>
+          </div>
+        )}
 
-      {/* Header */}
+        {/* 목록으로 — 이미지 위 오버레이 (Google Maps 스타일) */}
+        <button
+          onClick={onBack}
+          aria-label="목록으로"
+          className="absolute left-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow hover:bg-white"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </button>
+
+        {/* TODO(추후구현): 이미지 상단 검색창 */}
+      </div>
+
+      {/* 이름 */}
       <div>
         <h3 className="text-base font-bold text-gray-900">{detail.home_name}</h3>
         <span
@@ -96,15 +121,7 @@ export default function HousingDetailView({
         </span>
       </div>
 
-      {/* Representative image (served & cached by our API) */}
-      {detail.has_image && (
-        <img
-          src={housingImageUrl(detail.home_code)}
-          alt={`${detail.home_name} 투시도`}
-          loading="lazy"
-          className="max-h-48 w-full rounded-lg border border-gray-200 bg-gray-50 object-contain"
-        />
-      )}
+      {/* TODO(추후구현): Tabs */}
 
       {/* Info rows */}
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
