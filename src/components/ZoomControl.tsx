@@ -3,7 +3,7 @@ import { useMap } from '../map/MapProvider';
 /**
  * Google Maps 스타일의 커스텀 확대/축소 컨트롤.
  * Naver 기본 zoomControl(Bar)을 대체하며, 우하단에 + / − 버튼만 둔다.
- * 좌하단의 Naver 로고/스케일과 겹치지 않도록 우측에 배치한다.
+ * 우하단 Naver 오버레이(로고/스케일) 바로 위에 배치한다.
  */
 export default function ZoomControl() {
   const map = useMap();
@@ -14,7 +14,7 @@ export default function ZoomControl() {
   };
 
   return (
-    <div className="absolute bottom-6 right-3 z-10 flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+    <div className="absolute bottom-16 right-3 z-10 flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
       <button
         type="button"
         onClick={() => zoom(1)}

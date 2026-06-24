@@ -29,11 +29,11 @@ export default function MapProvider({ children }: { children?: ReactNode }) {
           mapTypeControl: false,
           // 기본 확대-축소 Bar 제거 → 커스텀 ZoomControl 사용
           zoomControl: false,
-          // 로고/스케일은 좌하단으로 고정해 우하단을 커스텀 줌 전용으로 비움
+          // 로고/스케일(Naver 오버레이)은 우하단으로 두고, 커스텀 줌 버튼을 그 위에 배치
           logoControl: true,
-          logoControlOptions: { position: ns.maps.Position.BOTTOM_LEFT },
+          logoControlOptions: { position: ns.maps.Position.BOTTOM_RIGHT },
           scaleControl: true,
-          scaleControlOptions: { position: ns.maps.Position.BOTTOM_LEFT },
+          scaleControlOptions: { position: ns.maps.Position.BOTTOM_RIGHT },
         });
         setMap(instance);
       })
