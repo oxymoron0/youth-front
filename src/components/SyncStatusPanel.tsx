@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLatestSync, useSyncHistory } from '../hooks/useSyncStatus';
 import type { SyncResult } from '../types/housing';
 
@@ -26,29 +26,22 @@ function isSuccess(result: SyncResult): boolean {
   return !result.error;
 }
 
-export default function SyncStatusIndicator() {
-  const [open, setOpen] = useState(false);
+/**
+ * 청년주택 패널 하단에 인라인으로 표시되는 동기화 상태 섹션.
+ * (이전의 떠 있는 SyncStatusIndicator 버튼/팝오버를 대체)
+ * 청년주택 API 동기화 결과 확인용이며 별도 서비스가 아니다.
+ */
+export default function SyncStatusPanel() {
+  const [expanded, setExpanded] = useState(false);
   const [now, setNow] = useState(() => Date.now());
-  const wrapperRef = useRef<HTMLDivElement>(null);
 
   const { data: latest, loading, error: latestError } = useLatestSync();
-  const { data: history } = useSyncHistory(open);
+  const { data: history } = useSyncHistory(expanded);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 5_000);
     return () => clearInterval(id);
   }, []);
-
-  useEffect(() => {
-    if (!open) return;
-    function handleClickOutside(e: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [open]);
 
   const status: 'success' | 'error' | 'loading' = latestError
     ? 'error'
@@ -70,26 +63,26 @@ export default function SyncStatusIndicator() {
   const count = latest ? latest.fetched_count : 0;
 
   return (
-    <div ref={wrapperRef} className="absolute bottom-3 right-3 z-10">
+    <div className="border-t border-gray-200 bg-gray-50/60 px-3 py-2 text-xs">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 rounded-full border border-gray-200 bg-white/95 px-3 py-1.5 text-xs shadow-lg backdrop-blur hover:bg-white"
+        onClick={() => setExpanded((v) => !v)}
+        className="flex w-full items-center gap-2"
         aria-label="동기화 상태"
+        aria-expanded={expanded}
       >
         <span className={`inline-block h-2 w-2 rounded-full ${dotColor}`} />
         <span className="text-gray-700">{label}</span>
         {latest && (
-          <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-600">
+          <span className="rounded-full bg-gray-200 px-1.5 py-0.5 text-[10px] font-medium text-gray-600">
             {count}건
           </span>
         )}
+        <span className="ml-auto text-gray-400">{expanded ? '▲' : '▼'}</span>
       </button>
 
-      {open && (
-        <div className="absolute bottom-10 right-0 w-80 rounded-lg border border-gray-200 bg-white p-3 text-xs shadow-xl">
-          <div className="mb-2 font-medium text-gray-700">동기화 상태</div>
-
+      {expanded && (
+        <div className="mt-2">
           {latest ? (
             <div className="mb-3 space-y-1 text-gray-600">
               <div className="flex justify-between">
@@ -107,9 +100,7 @@ export default function SyncStatusIndicator() {
                 </span>
               </div>
               {latest.error && (
-                <div className="mt-1 rounded bg-red-50 p-2 text-red-700">
-                  에러: {latest.error}
-                </div>
+                <div className="mt-1 rounded bg-red-50 p-2 text-red-700">에러: {latest.error}</div>
               )}
             </div>
           ) : (
@@ -118,7 +109,7 @@ export default function SyncStatusIndicator() {
 
           <div className="mb-1 text-gray-500">최근 이력 ({history.length}회)</div>
           {history.length > 0 ? (
-            <div className="flex h-12 items-end gap-0.5 rounded bg-gray-50 p-1">
+            <div className="flex h-12 items-end gap-0.5 rounded bg-gray-100 p-1">
               {history.map((h, i) => {
                 const success = isSuccess(h);
                 const heightPct = Math.min(

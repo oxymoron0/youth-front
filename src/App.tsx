@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import MapProvider, { useMap } from './map/MapProvider';
-import LeftPanel from './components/LeftPanel';
+import Sidebar from './components/Sidebar';
+import ZoomControl from './components/ZoomControl';
 import HousingList from './components/HousingList';
 import HousingDetailView from './components/HousingDetailView';
 import HousingLayer from './components/HousingLayer';
@@ -8,7 +9,6 @@ import StationLayer from './components/StationLayer';
 import ExitLayer from './components/ExitLayer';
 import NearStationHighlight from './components/NearStationHighlight';
 import SeoulDistrictLayer from './components/SeoulDistrictLayer';
-import SyncStatusIndicator from './components/SyncStatusIndicator';
 import { useLines } from './hooks/useLines';
 import { useHousings } from './hooks/useHousings';
 import { useStations } from './hooks/useStations';
@@ -18,15 +18,12 @@ import type { StationDetail } from './types';
 import type { NearbyStation } from './types/housing';
 import { AUTO_CHECK_STATUSES } from './types/housing';
 
-const SEARCH_FOCUS_ZOOM = 15;
-
 function AppContent() {
   const map = useMap();
   const { lines, loading: linesLoading } = useLines();
   const { data: stationsGeo } = useStations();
   const seoulDistricts = useSeoulDistricts();
 
-  const [activeTab, setActiveTab] = useState<'housing' | 'lines'>('housing');
   const [visibleLines, setVisibleLines] = useState<Set<number>>(new Set());
   const [selectedStation, setSelectedStation] = useState<StationDetail | null>(null);
   const [districtEnabled, _setDistrictEnabled] = useState(false);
@@ -81,19 +78,6 @@ function AppContent() {
       .catch(() => setSelectedStation(null));
   }, []);
 
-  const handleSearchSelect = useCallback(
-    (stationId: number, lon: number, lat: number) => {
-      if (map) {
-        map.morph(new naver.maps.LatLng(lat, lon), SEARCH_FOCUS_ZOOM, {
-          duration: 1500,
-          easing: 'easeOutCubic',
-        });
-      }
-      handleStationClick(stationId);
-    },
-    [map, handleStationClick],
-  );
-
   const handleToggleHomeCheck = useCallback((homeCode: string) => {
     setCheckedHomes((prev) => {
       const next = new Set(prev);
@@ -146,14 +130,11 @@ function AppContent() {
         visible={districtEnabled}
         visibleDistricts={districtEnabled ? visibleDistricts : null}
       />
-      <LeftPanel
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
+      <Sidebar
         lines={lines}
         visibleLines={visibleLines}
         onToggle={handleToggleLine}
         linesLoading={linesLoading}
-        onSearchSelect={handleSearchSelect}
       >
         {selectedHomeCode ? (
           <HousingDetailView
@@ -171,8 +152,8 @@ function AppContent() {
             onPageChange={setHousingPage}
           />
         )}
-      </LeftPanel>
-      <SyncStatusIndicator />
+      </Sidebar>
+      <ZoomControl />
     </>
   );
 }

@@ -27,9 +27,13 @@ export default function MapProvider({ children }: { children?: ReactNode }) {
           zoom: INITIAL_ZOOM,
           mapTypeId: ns.maps.MapTypeId.NORMAL,
           mapTypeControl: false,
-          zoomControl: true,
-          scaleControl: true,
+          // 기본 확대-축소 Bar 제거 → 커스텀 ZoomControl 사용
+          zoomControl: false,
+          // 로고/스케일은 좌하단으로 고정해 우하단을 커스텀 줌 전용으로 비움
           logoControl: true,
+          logoControlOptions: { position: ns.maps.Position.BOTTOM_LEFT },
+          scaleControl: true,
+          scaleControlOptions: { position: ns.maps.Position.BOTTOM_LEFT },
         });
         setMap(instance);
       })
