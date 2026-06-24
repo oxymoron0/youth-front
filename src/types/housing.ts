@@ -26,6 +26,7 @@ export interface HousingDetail {
   constructor: string | null;
   latitude: number | null;
   longitude: number | null;
+  has_image: boolean;
 }
 
 export interface NearbyStation {

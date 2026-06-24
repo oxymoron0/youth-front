@@ -1,4 +1,5 @@
 import { apiFetch } from './client';
+import { env } from '../env';
 import type {
   HousingListItem,
   HousingDetail,
@@ -9,6 +10,12 @@ import type {
 
 export function fetchHousings(): Promise<HousingListItem[]> {
   return apiFetch<HousingListItem[]>('/api/v1/housings');
+}
+
+/** Absolute URL for a housing's stored representative image (served by our API). */
+export function housingImageUrl(homeCode: string): string {
+  const base = env('VITE_API_BASE_URL');
+  return `${base}/api/v1/housings/${encodeURIComponent(homeCode)}/image`;
 }
 
 export function fetchHousingDetail(homeCode: string): Promise<HousingDetail> {

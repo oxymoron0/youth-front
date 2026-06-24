@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchHousingDetail, fetchNearbyStations } from '../api/housing';
+import { fetchHousingDetail, fetchNearbyStations, housingImageUrl } from '../api/housing';
 import { SUPPLY_STATUS_LABELS } from '../types/housing';
 import type { HousingDetail, NearbyStation } from '../types/housing';
 
@@ -95,6 +95,16 @@ export default function HousingDetailView({
           {SUPPLY_STATUS_LABELS[detail.supply_status] ?? detail.supply_status}
         </span>
       </div>
+
+      {/* Representative image (served & cached by our API) */}
+      {detail.has_image && (
+        <img
+          src={housingImageUrl(detail.home_code)}
+          alt={`${detail.home_name} 투시도`}
+          loading="lazy"
+          className="max-h-48 w-full rounded-lg border border-gray-200 bg-gray-50 object-contain"
+        />
+      )}
 
       {/* Info rows */}
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
