@@ -1,21 +1,34 @@
-import { useState, type ReactNode } from 'react';
-import LineSelector from './LineSelector';
-import SyncStatusPanel from './SyncStatusPanel';
-import type { Line } from '../types';
-
-interface SidebarProps {
-  lines: Line[];
-  visibleLines: Set<number>;
-  onToggle: (lineId: number) => void;
-  linesLoading: boolean;
-  /** 청년주택 탭 콘텐츠 (HousingList / HousingDetailView) */
-  children?: ReactNode;
-}
+import { type ReactNode } from 'react';
+import HousingSearchBar from './HousingSearchBar';
+import type { RecentSearch } from '../hooks/useRecentSearches';
 
 type TabKey = 'housing' | 'lines';
 
+interface SidebarProps {
+  active: TabKey | null;
+  onSelectTab: (key: TabKey) => void;
+  /** 패널 본문(검색결과/목록/상세/노선)이 펼쳐져 있는지 */
+  panelOpen: boolean;
+  searchQuery: string;
+  onSearchChange: (q: string) => void;
+  onSearchExit: () => void;
+  recents: RecentSearch[];
+  onPickRecent: (item: RecentSearch) => void;
+  onClearRecents: () => void;
+  /** 패널 본문 콘텐츠 (App이 상태에 따라 계산) */
+  children?: ReactNode;
+}
+
 const RAIL_WIDTH = 72;
 const PANEL_WIDTH = 408;
+
+function HamburgerIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <path d="M4 7h16M4 12h16M4 17h16" />
+    </svg>
+  );
+}
 
 function HouseIcon() {
   return (
@@ -45,137 +58,119 @@ const TABS: { key: TabKey; label: string; icon: ReactNode }[] = [
 ];
 
 export default function Sidebar({
-  lines,
-  visibleLines,
-  onToggle,
-  linesLoading,
+  active,
+  onSelectTab,
+  panelOpen,
+  searchQuery,
+  onSearchChange,
+  onSearchExit,
+  recents,
+  onPickRecent,
+  onClearRecents,
   children,
 }: SidebarProps) {
-  const [active, setActive] = useState<TabKey | null>('housing');
-
-  const toggle = (key: TabKey) => setActive((prev) => (prev === key ? null : key));
-
-  const housingPanel = (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="flex-1 overflow-y-auto p-3">{children}</div>
-      <SyncStatusPanel />
-    </div>
+  const searchBar = (
+    <HousingSearchBar
+      query={searchQuery}
+      onChange={onSearchChange}
+      onExit={onSearchExit}
+      showExit={panelOpen}
+      recents={recents}
+      onPickRecent={onPickRecent}
+      onClearRecents={onClearRecents}
+    />
   );
 
-  const linesPanel = (
-    <div className="h-full overflow-y-auto p-3">
-      <LineSelector
-        lines={lines}
-        visibleLines={visibleLines}
-        onToggle={onToggle}
-        loading={linesLoading}
-        embedded
-      />
-    </div>
-  );
-
-  const panelBody = (
+  const railItems = (vertical: boolean) => (
     <>
-      <div className="flex items-center justify-between border-b border-gray-200 px-3 py-2">
-        <span className="text-sm font-semibold text-gray-800">
-          {active === 'housing' ? '청년주택' : '지하철 노선'}
+      {/* 햄버거 (메뉴 placeholder — 동작 추후구현) */}
+      <button
+        type="button"
+        aria-label="메뉴"
+        title="메뉴 (준비 중)"
+        className={
+          vertical
+            ? 'flex flex-col items-center gap-0.5 py-3 text-[11px] font-medium text-gray-500'
+            : 'flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px] font-medium text-gray-500'
+        }
+      >
+        <span className={vertical ? 'flex h-10 w-10 items-center justify-center rounded-lg' : ''}>
+          <HamburgerIcon />
         </span>
-        <button
-          type="button"
-          onClick={() => setActive(null)}
-          aria-label="패널 닫기"
-          className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <path d="M6 6l12 12M18 6L6 18" />
-          </svg>
-        </button>
-      </div>
-      <div className="min-h-0 flex-1">
-        <div className={active === 'housing' ? 'h-full' : 'hidden'}>{housingPanel}</div>
-        <div className={active === 'lines' ? 'h-full' : 'hidden'}>{linesPanel}</div>
-      </div>
+      </button>
+      {TABS.map((tab) => {
+        const isActive = active === tab.key;
+        const color = isActive ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700';
+        return (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => onSelectTab(tab.key)}
+            aria-pressed={isActive}
+            className={
+              vertical
+                ? `flex flex-col items-center gap-0.5 py-3 text-[11px] font-medium transition-colors ${color}`
+                : `flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition-colors ${color}`
+            }
+          >
+            <span className={vertical ? `flex h-10 w-10 items-center justify-center rounded-lg ${isActive ? 'bg-blue-50' : ''}` : ''}>
+              {tab.icon}
+            </span>
+            {tab.label}
+          </button>
+        );
+      })}
     </>
   );
 
   return (
     <>
-      {/* ===== Desktop: 좌측 세로 레일 + 사이드 패널 ===== */}
-      {/* 레일 */}
+      {/* ===== Desktop: 좌측 레일 + 검색 표면 ===== */}
       <nav
         className="absolute left-0 top-0 bottom-0 z-20 hidden flex-col border-r border-gray-200 bg-white md:flex"
         style={{ width: RAIL_WIDTH }}
       >
-        {TABS.map((tab) => {
-          const isActive = active === tab.key;
-          return (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => toggle(tab.key)}
-              aria-pressed={isActive}
-              className={`flex flex-col items-center gap-1 py-3 text-[11px] font-medium transition-colors ${
-                isActive ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              <span
-                className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                  isActive ? 'bg-blue-50' : ''
-                }`}
-              >
-                {tab.icon}
-              </span>
-              {tab.label}
-            </button>
-          );
-        })}
+        {railItems(true)}
       </nav>
 
-      {/* 패널 (지도 위 오버레이 — 지도 크기는 변하지 않음) */}
+      {/* 검색 표면 컬럼 (검색바는 항상 보이고, 본문은 그 아래로 확장) */}
       <div
-        className={`absolute top-0 bottom-0 z-10 hidden flex-col border-r border-gray-200 bg-white shadow-xl transition-transform duration-200 ease-out md:flex ${
-          active ? 'translate-x-0' : 'pointer-events-none -translate-x-[480px]'
-        }`}
+        className="pointer-events-none absolute top-0 bottom-0 z-10 hidden flex-col md:flex"
         style={{ left: RAIL_WIDTH, width: PANEL_WIDTH }}
       >
-        {panelBody}
+        <div className="px-3 pt-3">{searchBar}</div>
+        <div
+          className={
+            panelOpen
+              ? 'pointer-events-auto mt-2 flex min-h-0 flex-1 flex-col overflow-hidden border-r border-gray-200 bg-white shadow-xl'
+              : 'hidden'
+          }
+        >
+          {children}
+        </div>
       </div>
 
-      {/* ===== Mobile: 하단 아이콘 바 + 바텀시트 ===== */}
-      {/* 바텀시트 (하단 바보다 아래 z, 하단 16(=64px)은 바 영역으로 패딩) */}
+      {/* ===== Mobile: 상단 검색바 + 하단 바 + 바텀시트 ===== */}
+      <div className="pointer-events-none fixed inset-x-2 top-2 z-40 md:hidden">
+        {searchBar}
+      </div>
+
       <div
         className={`fixed inset-x-0 bottom-0 z-30 flex h-[70vh] flex-col rounded-t-2xl bg-white pb-16 shadow-2xl transition-transform duration-200 ease-out md:hidden ${
-          active ? 'translate-y-0' : 'translate-y-full'
+          panelOpen ? 'translate-y-0' : 'translate-y-full'
         }`}
       >
         <button
           type="button"
-          onClick={() => setActive(null)}
+          onClick={onSearchExit}
           aria-label="패널 닫기"
           className="mx-auto mt-2 mb-1 h-1.5 w-12 shrink-0 rounded-full bg-gray-300"
         />
-        {panelBody}
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
       </div>
 
-      {/* 하단 아이콘 바 (시트보다 위 z로 항상 탭 가능) */}
       <nav className="fixed inset-x-0 bottom-0 z-40 flex h-16 border-t border-gray-200 bg-white md:hidden">
-        {TABS.map((tab) => {
-          const isActive = active === tab.key;
-          return (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => toggle(tab.key)}
-              aria-pressed={isActive}
-              className={`flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition-colors ${
-                isActive ? 'text-blue-600' : 'text-gray-500'
-              }`}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          );
-        })}
+        {railItems(false)}
       </nav>
     </>
   );
