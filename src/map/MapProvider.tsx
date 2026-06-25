@@ -10,6 +10,10 @@ export function useMap(): naver.maps.Map | null {
 const SEOUL_CENTER: naver.maps.LatLngObjectLiteral = { lat: 37.5665, lng: 126.978 };
 const INITIAL_ZOOM = 12;
 
+/** 확대/축소 한계 (수도권 전체 ~ 건물 단위). ZoomControl과 공유한다. */
+export const MIN_ZOOM = 9;
+export const MAX_ZOOM = 19;
+
 export default function MapProvider({ children }: { children?: ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<naver.maps.Map | null>(null);
@@ -25,6 +29,8 @@ export default function MapProvider({ children }: { children?: ReactNode }) {
         instance = new ns.maps.Map(containerRef.current, {
           center: new ns.maps.LatLng(SEOUL_CENTER.lat, SEOUL_CENTER.lng),
           zoom: INITIAL_ZOOM,
+          minZoom: MIN_ZOOM,
+          maxZoom: MAX_ZOOM,
           mapTypeId: ns.maps.MapTypeId.NORMAL,
           mapTypeControl: false,
           // 기본 확대-축소 Bar 제거 → 커스텀 ZoomControl 사용
