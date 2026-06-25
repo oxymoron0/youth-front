@@ -133,20 +133,19 @@ export default function Sidebar({
         {railItems(true)}
       </nav>
 
-      {/* 검색 표면 컬럼 (검색바는 항상 보이고, 본문은 그 아래로 확장) */}
+      {/* 검색 표면 컬럼 — 검색바와 확장 패널이 하나의 흰 표면을 공유한다.
+          (열렸을 때 둘 사이에 지도가 비치는 간격이 없도록 panel 배경을 함께 덮는다) */}
       <div
-        className="pointer-events-none absolute top-0 bottom-0 z-10 hidden flex-col md:flex"
+        className="pointer-events-none absolute top-0 bottom-0 z-10 hidden md:block"
         style={{ left: RAIL_WIDTH, width: PANEL_WIDTH }}
       >
-        <div className="px-3 pt-3">{searchBar}</div>
         <div
-          className={
-            panelOpen
-              ? 'pointer-events-auto mt-2 flex min-h-0 flex-1 flex-col overflow-hidden border-r border-gray-200 bg-white shadow-xl'
-              : 'hidden'
-          }
+          className={`flex h-full min-h-0 flex-col ${
+            panelOpen ? 'pointer-events-auto border-r border-gray-200 bg-white shadow-xl' : ''
+          }`}
         >
-          {children}
+          <div className="pointer-events-auto px-3 pt-3">{searchBar}</div>
+          {panelOpen && <div className="mt-3 min-h-0 flex-1 overflow-hidden">{children}</div>}
         </div>
       </div>
 
