@@ -3,8 +3,6 @@ import type { HousingListItem } from '../types/housing';
 
 interface HousingListProps {
   housings: HousingListItem[];
-  checkedHomes: Set<string>;
-  onToggleCheck: (homeCode: string) => void;
   onSelectHousing: (homeCode: string) => void;
   page: number;
   onPageChange: (page: number) => void;
@@ -32,8 +30,6 @@ function statusBadgeClass(status: string): string {
 
 export default function HousingList({
   housings,
-  checkedHomes,
-  onToggleCheck,
   onSelectHousing,
   page,
   onPageChange,
@@ -51,14 +47,8 @@ export default function HousingList({
       {pageItems.map((h) => (
         <div
           key={h.home_code}
-          className="flex items-start gap-2 rounded-md border border-gray-100 px-2 py-1.5 hover:bg-blue-50/50"
+          className="rounded-md border border-gray-100 px-2 py-1.5 hover:bg-blue-50/50"
         >
-          <input
-            type="checkbox"
-            className="mt-1 h-4 w-4 shrink-0 accent-blue-600"
-            checked={checkedHomes.has(h.home_code)}
-            onChange={() => onToggleCheck(h.home_code)}
-          />
           <div className="min-w-0 flex-1">
             <button
               onClick={() => onSelectHousing(h.home_code)}

@@ -19,7 +19,6 @@ import { useRecentSearches, type RecentSearch } from './hooks/useRecentSearches'
 import { fetchStationDetail } from './api/client';
 import type { StationDetail } from './types';
 import type { NearbyStation } from './types/housing';
-import { AUTO_CHECK_STATUSES } from './types/housing';
 
 type TabKey = 'housing' | 'lines';
 
@@ -29,20 +28,25 @@ function AppContent() {
   const { data: stationsGeo } = useStations();
   const seoulDistricts = useSeoulDistricts();
 
+  // 지하철 노선은 기본적으로 렌더링하지 않는다 (빈 셋으로 시작; 노선 탭에서 토글).
   const [visibleLines, setVisibleLines] = useState<Set<number>>(new Set());
   const [selectedStation, setSelectedStation] = useState<StationDetail | null>(null);
   const [districtEnabled, _setDistrictEnabled] = useState(false);
   const [visibleDistricts, setVisibleDistricts] = useState<Set<string>>(new Set());
-  const initRef = useRef(false);
   const districtInitRef = useRef(false);
 
   const { housings } = useHousings();
-  const [checkedHomes, setCheckedHomes] = useState<Set<string>>(new Set());
   const [selectedHomeCode, setSelectedHomeCode] = useState<string | null>(null);
   const [nearbyStations, setNearbyStations] = useState<NearbyStation[]>([]);
   const [housingPage, setHousingPage] = useState(1);
   const [searchPage, setSearchPage] = useState(1);
-  const housingInitRef = useRef(false);
+
+  // 추후 종류별 필터링용 변수. null = 전체 표시(현재 기본값).
+  // 향후 Set<supply_status> 등을 지정하면 지도 마커를 해당 종류만 렌더하도록 확장한다.
+  const [housingStatusFilter, _setHousingStatusFilter] = useState<Set<string> | null>(null);
+  const visibleHousings = housingStatusFilter
+    ? housings.filter((h) => housingStatusFilter.has(h.supply_status))
+    : housings;
 
   // 좌측 표면 상태: 레일 탭 + 검색어
   const [active, setActive] = useState<TabKey | null>('housing');
@@ -50,29 +54,11 @@ function AppContent() {
   const { recents, add: addRecent, clear: clearRecents } = useRecentSearches();
 
   useEffect(() => {
-    if (lines.length > 0 && !initRef.current) {
-      initRef.current = true;
-      setVisibleLines(new Set(lines.map((l) => l.line_id)));
-    }
-  }, [lines]);
-
-  useEffect(() => {
     if (seoulDistricts && !districtInitRef.current) {
       districtInitRef.current = true;
       setVisibleDistricts(new Set(seoulDistricts.features.map((f) => f.properties.code)));
     }
   }, [seoulDistricts]);
-
-  useEffect(() => {
-    if (housings.length > 0 && !housingInitRef.current) {
-      housingInitRef.current = true;
-      setCheckedHomes(new Set(
-        housings
-          .filter((h) => AUTO_CHECK_STATUSES.includes(h.supply_status))
-          .map((h) => h.home_code)
-      ));
-    }
-  }, [housings]);
 
   const handleToggleLine = useCallback((lineId: number) => {
     setVisibleLines((prev) => {
@@ -87,15 +73,6 @@ function AppContent() {
     fetchStationDetail(stationId)
       .then((detail) => setSelectedStation(detail))
       .catch(() => setSelectedStation(null));
-  }, []);
-
-  const handleToggleHomeCheck = useCallback((homeCode: string) => {
-    setCheckedHomes((prev) => {
-      const next = new Set(prev);
-      if (next.has(homeCode)) next.delete(homeCode);
-      else next.add(homeCode);
-      return next;
-    });
   }, []);
 
   const panToHousing = useCallback((homeCode: string) => {
@@ -181,8 +158,6 @@ function AppContent() {
           {searchResults.length > 0 ? (
             <HousingList
               housings={searchResults}
-              checkedHomes={checkedHomes}
-              onToggleCheck={handleToggleHomeCheck}
               onSelectHousing={handleSelectHousing}
               page={searchPage}
               onPageChange={setSearchPage}
@@ -211,8 +186,6 @@ function AppContent() {
         <div className="flex-1 overflow-y-auto p-3">
           <HousingList
             housings={housings}
-            checkedHomes={checkedHomes}
-            onToggleCheck={handleToggleHomeCheck}
             onSelectHousing={handleSelectHousing}
             page={housingPage}
             onPageChange={setHousingPage}
@@ -235,8 +208,7 @@ function AppContent() {
         stationId={selectedStation?.station_id ?? null}
       />
       <HousingLayer
-        housings={housings}
-        checkedHomes={checkedHomes}
+        housings={visibleHousings}
         selectedHomeCode={selectedHomeCode}
         onHousingClick={handleSelectHousing}
       />
