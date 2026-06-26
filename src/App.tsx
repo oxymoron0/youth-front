@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import MapProvider, { useMap } from './map/MapProvider';
 import Sidebar from './components/Sidebar';
 import ZoomControl from './components/ZoomControl';
@@ -133,10 +133,27 @@ function AppContent() {
   }, []);
 
   const trimmed = searchQuery.trim().toLowerCase();
-  const searchResults = trimmed
-    ? housings.filter((h) => h.home_name.toLowerCase().includes(trimmed))
-    : [];
+  const searchResults = useMemo(
+    () => (trimmed ? housings.filter((h) => h.home_name.toLowerCase().includes(trimmed)) : []),
+    [housings, trimmed],
+  );
   const panelOpen = selectedHomeCode != null || trimmed !== '' || active != null;
+
+  // 검색 결과가 바뀌면 결과 마커가 모두 보이도록 지도를 맞춘다.
+  // 좌측 패널(레일 72 + 패널 408)에 가리지 않도록 left margin을 크게 둔다.
+  useEffect(() => {
+    if (!map || trimmed === '') return;
+    const coords = searchResults
+      .filter((h) => h.latitude != null && h.longitude != null)
+      .map((h) => new naver.maps.LatLng(h.latitude as number, h.longitude as number));
+    const [first] = coords;
+    if (!first) return;
+    if (coords.length === 1) {
+      map.panTo(first, { duration: 600 });
+      return;
+    }
+    map.fitBounds(coords, { top: 80, right: 80, bottom: 80, left: 500, maxZoom: 16 });
+  }, [map, trimmed, searchResults]);
 
   let panelContent: ReactNode = null;
   if (selectedHomeCode) {

@@ -5,6 +5,8 @@ export interface HousingListItem {
   address_gu: string | null;
   longitude: number | null;
   latitude: number | null;
+  deposit_low: number | null;
+  rental_low: number | null;
 }
 
 export interface HousingDetail {

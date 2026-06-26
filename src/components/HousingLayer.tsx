@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { useMap } from '../map/MapProvider';
+import { SUPPLY_STATUS_LABELS } from '../types/housing';
 import type { HousingListItem } from '../types/housing';
+import { housingImageUrl } from '../api/housing';
 import {
   housingStatusCategory,
   HOUSING_MARKER_COLOR,
@@ -19,11 +21,38 @@ interface HousingMeta {
   marker: naver.maps.Marker;
   homeCode: string;
   status: string;
-  clickHandle: naver.maps.MapEventListener;
+  handles: naver.maps.MapEventListener[];
 }
 
 const SIZE = 32;
 const ANCHOR = SIZE / 2;
+
+function escapeHtml(s: string): string {
+  return s.replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string,
+  );
+}
+
+function formatWon(v: number | null): string {
+  return v == null ? '-' : `${v.toLocaleString()}원`;
+}
+
+/** 마커 hover 시 보여줄 미니 팝업(이름·상태·임대료·썸네일) HTML. */
+function infoContent(h: HousingListItem): string {
+  const label = SUPPLY_STATUS_LABELS[h.supply_status] ?? h.supply_status;
+  const color = HOUSING_MARKER_COLOR[housingStatusCategory(h.supply_status)];
+  const img = housingImageUrl(h.home_code);
+  return (
+    `<div style="width:210px;overflow:hidden;border-radius:10px;background:#fff;border:1px solid #e5e7eb;box-shadow:0 4px 14px rgba(0,0,0,.18);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">` +
+    `<img src="${img}" onerror="this.style.display='none'" alt="" style="display:block;width:100%;height:104px;object-fit:cover;"/>` +
+    `<div style="padding:8px 10px;">` +
+    `<div style="font-size:13px;font-weight:700;color:#1f2937;line-height:1.35;">${escapeHtml(h.home_name)}</div>` +
+    `<div style="margin-top:5px;"><span style="display:inline-block;background:${color};color:#fff;border-radius:9999px;padding:1px 8px;font-size:10px;font-weight:600;">${escapeHtml(label)}</span></div>` +
+    `<div style="margin-top:6px;font-size:11px;color:#374151;">보증금 ${formatWon(h.deposit_low)} · 월 ${formatWon(h.rental_low)}</div>` +
+    `</div></div>`
+  );
+}
 
 const HOUSE_PATH_1 =
   'M487.083,225.514l-75.08-75.08V63.704c0-15.682-12.708-28.391-28.413-28.391c-15.669,0-28.377,12.709-28.377,28.391v29.941L299.31,37.74c-27.639-27.624-75.694-27.575-103.27,0.05L8.312,225.514c-11.082,11.104-11.082,29.071,0,40.158c11.087,11.101,29.089,11.101,40.172,0l187.71-187.729c6.115-6.083,16.893-6.083,22.976-0.018l187.742,187.747c5.567,5.551,12.825,8.312,20.081,8.312c7.271,0,14.541-2.764,20.091-8.312C498.17,254.586,498.17,236.619,487.083,225.514z';
@@ -75,6 +104,15 @@ export default function HousingLayer({
   useEffect(() => {
     if (!map) return;
 
+    const infoWindow = new naver.maps.InfoWindow({
+      content: '',
+      backgroundColor: 'transparent',
+      borderWidth: 0,
+      disableAnchor: true,
+      pixelOffset: new naver.maps.Point(0, -14),
+      maxWidth: 230,
+    });
+
     const metas: HousingMeta[] = [];
     for (const h of housings) {
       if (h.longitude == null || h.latitude == null) continue;
@@ -88,18 +126,24 @@ export default function HousingLayer({
         map,
       });
 
-      const clickHandle = naver.maps.Event.addListener(marker, 'click', () => {
-        onHousingClick(h.home_code);
-      });
+      const handles = [
+        naver.maps.Event.addListener(marker, 'click', () => onHousingClick(h.home_code)),
+        naver.maps.Event.addListener(marker, 'mouseover', () => {
+          infoWindow.setContent(infoContent(h));
+          infoWindow.open(map, marker);
+        }),
+        naver.maps.Event.addListener(marker, 'mouseout', () => infoWindow.close()),
+      ];
 
-      metas.push({ marker, homeCode: h.home_code, status: h.supply_status, clickHandle });
+      metas.push({ marker, homeCode: h.home_code, status: h.supply_status, handles });
     }
 
     metasRef.current = metas;
 
     return () => {
+      infoWindow.close();
       for (const m of metas) {
-        naver.maps.Event.removeListener(m.clickHandle);
+        for (const handle of m.handles) naver.maps.Event.removeListener(handle);
         m.marker.setMap(null);
       }
       metasRef.current = [];
