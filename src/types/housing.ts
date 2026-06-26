@@ -3,6 +3,7 @@ export interface HousingListItem {
   home_name: string;
   supply_status: string;
   address_gu: string | null;
+  address_dong: string | null;
   longitude: number | null;
   latitude: number | null;
   deposit_low: number | null;

@@ -62,8 +62,10 @@ export default function HousingList({
               >
                 {SUPPLY_STATUS_LABELS[h.supply_status] ?? h.supply_status}
               </span>
-              {h.address_gu && (
-                <span className="text-[11px] text-gray-400">{h.address_gu}</span>
+              {(h.address_gu || h.address_dong) && (
+                <span className="text-[11px] text-gray-400">
+                  {[h.address_gu, h.address_dong].filter(Boolean).join(' ')}
+                </span>
               )}
             </div>
           </div>

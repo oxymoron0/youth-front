@@ -2,12 +2,12 @@ import { type ReactNode } from 'react';
 import HousingSearchBar from './HousingSearchBar';
 import type { RecentSearch } from '../hooks/useRecentSearches';
 
-type TabKey = 'housing' | 'lines';
+type TabKey = 'housing' | 'finance';
 
 interface SidebarProps {
   active: TabKey | null;
   onSelectTab: (key: TabKey) => void;
-  /** 패널 본문(검색결과/목록/상세/노선)이 펼쳐져 있는지 */
+  /** 패널 본문(검색결과/목록/상세/금융)이 펼쳐져 있는지 */
   panelOpen: boolean;
   searchQuery: string;
   onSearchChange: (q: string) => void;
@@ -40,21 +40,19 @@ function HouseIcon() {
   );
 }
 
-function SubwayIcon() {
+function FinanceIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="6" y="3" width="12" height="14" rx="3" />
-      <path d="M6 11h12" />
-      <circle cx="9" cy="14" r="0.8" fill="currentColor" stroke="none" />
-      <circle cx="15" cy="14" r="0.8" fill="currentColor" stroke="none" />
-      <path d="M8 17l-2 4M16 17l2 4" />
+      <rect x="2" y="6" width="20" height="13" rx="2" />
+      <path d="M2 10h20" />
+      <path d="M6 15h4" />
     </svg>
   );
 }
 
 const TABS: { key: TabKey; label: string; icon: ReactNode }[] = [
   { key: 'housing', label: '청년주택', icon: <HouseIcon /> },
-  { key: 'lines', label: '노선', icon: <SubwayIcon /> },
+  { key: 'finance', label: '금융', icon: <FinanceIcon /> },
 ];
 
 export default function Sidebar({

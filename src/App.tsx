@@ -9,27 +9,26 @@ import StationLayer from './components/StationLayer';
 import ExitLayer from './components/ExitLayer';
 import NearStationHighlight from './components/NearStationHighlight';
 import SeoulDistrictLayer from './components/SeoulDistrictLayer';
-import LineSelector from './components/LineSelector';
+import FinancePanel from './components/FinancePanel';
 import SyncStatusPanel from './components/SyncStatusPanel';
-import { useLines } from './hooks/useLines';
 import { useHousings } from './hooks/useHousings';
 import { useStations } from './hooks/useStations';
 import { useSeoulDistricts } from './hooks/useSeoulDistricts';
 import { useRecentSearches, type RecentSearch } from './hooks/useRecentSearches';
+import { filterHousings } from './utils/housingSearch';
 import { fetchStationDetail } from './api/client';
 import type { StationDetail } from './types';
 import type { NearbyStation } from './types/housing';
 
-type TabKey = 'housing' | 'lines';
+type TabKey = 'housing' | 'finance';
 
 function AppContent() {
   const map = useMap();
-  const { lines, loading: linesLoading } = useLines();
   const { data: stationsGeo } = useStations();
   const seoulDistricts = useSeoulDistricts();
 
-  // 지하철 노선은 기본적으로 렌더링하지 않는다 (빈 셋으로 시작; 노선 탭에서 토글).
-  const [visibleLines, setVisibleLines] = useState<Set<number>>(new Set());
+  // 지하철 노선은 렌더링하지 않는다 (노선 탭 제거). StationLayer는 빈 셋이라 미표시.
+  const [visibleLines] = useState<Set<number>>(new Set());
   const [selectedStation, setSelectedStation] = useState<StationDetail | null>(null);
   const [districtEnabled, _setDistrictEnabled] = useState(false);
   const [visibleDistricts, setVisibleDistricts] = useState<Set<string>>(new Set());
@@ -59,15 +58,6 @@ function AppContent() {
       setVisibleDistricts(new Set(seoulDistricts.features.map((f) => f.properties.code)));
     }
   }, [seoulDistricts]);
-
-  const handleToggleLine = useCallback((lineId: number) => {
-    setVisibleLines((prev) => {
-      const next = new Set(prev);
-      if (next.has(lineId)) next.delete(lineId);
-      else next.add(lineId);
-      return next;
-    });
-  }, []);
 
   const handleStationClick = useCallback((stationId: number) => {
     fetchStationDetail(stationId)
@@ -134,8 +124,8 @@ function AppContent() {
 
   const trimmed = searchQuery.trim().toLowerCase();
   const searchResults = useMemo(
-    () => (trimmed ? housings.filter((h) => h.home_name.toLowerCase().includes(trimmed)) : []),
-    [housings, trimmed],
+    () => filterHousings(housings, searchQuery),
+    [housings, searchQuery],
   );
   const panelOpen = selectedHomeCode != null || trimmed !== '' || active != null;
 
@@ -185,18 +175,8 @@ function AppContent() {
         </div>
       </div>
     );
-  } else if (active === 'lines') {
-    panelContent = (
-      <div className="h-full overflow-y-auto p-3">
-        <LineSelector
-          lines={lines}
-          visibleLines={visibleLines}
-          onToggle={handleToggleLine}
-          loading={linesLoading}
-          embedded
-        />
-      </div>
-    );
+  } else if (active === 'finance') {
+    panelContent = <FinancePanel />;
   } else if (active === 'housing') {
     panelContent = (
       <div className="flex h-full min-h-0 flex-col">
