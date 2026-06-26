@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://youth.leorca.org/sitemap.xml

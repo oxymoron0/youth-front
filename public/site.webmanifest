@@ -1,0 +1,16 @@
+{
+  "name": "청년주택 트래커",
+  "short_name": "청년주택",
+  "description": "서울시 청년안심주택을 네이버 지도에서 한눈에 검색·비교",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "lang": "ko-KR",
+  "icons": [
+    { "src": "/favicon.svg", "type": "image/svg+xml", "sizes": "any" },
+    { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512", "purpose": "any maskable" }
+  ]
+}
