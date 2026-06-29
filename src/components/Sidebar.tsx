@@ -9,6 +9,8 @@ interface SidebarProps {
   onSelectTab: (key: TabKey) => void;
   /** 패널 본문(검색결과/목록/상세/금융)이 펼쳐져 있는지 */
   panelOpen: boolean;
+  /** 상세(히어로 이미지) 모드 — true면 이미지가 최상단까지 차고 검색바가 그 위에 오버레이된다 */
+  heroOverlay: boolean;
   searchQuery: string;
   onSearchChange: (q: string) => void;
   onSearchExit: () => void;
@@ -59,6 +61,7 @@ export default function Sidebar({
   active,
   onSelectTab,
   panelOpen,
+  heroOverlay,
   searchQuery,
   onSearchChange,
   onSearchExit,
@@ -131,20 +134,29 @@ export default function Sidebar({
         {railItems(true)}
       </nav>
 
-      {/* 검색 표면 컬럼 — 검색바와 확장 패널이 하나의 흰 표면을 공유한다.
-          (열렸을 때 둘 사이에 지도가 비치는 간격이 없도록 panel 배경을 함께 덮는다) */}
+      {/* 검색 표면 컬럼 — 검색바가 패널 최상단에 오버레이된다(Google Maps).
+          상세(heroOverlay)면 이미지가 최상단까지 차서 검색바가 이미지 위에 떠 보인다. */}
       <div
         className="pointer-events-none absolute top-0 bottom-0 z-10 hidden md:block"
         style={{ left: RAIL_WIDTH, width: PANEL_WIDTH }}
       >
-        <div
-          className={`flex h-full min-h-0 flex-col ${
-            panelOpen ? 'pointer-events-auto border-r border-gray-200 bg-white shadow-xl' : ''
-          }`}
-        >
-          {/* 검색바: 패널 상단 고정 헤더. 본문(상세 이미지 등)이 바로 아래에 붙는다. */}
-          <div className="pointer-events-auto px-3 pt-3">{searchBar}</div>
-          {panelOpen && <div className="min-h-0 flex-1 overflow-hidden">{children}</div>}
+        <div className="relative h-full">
+          {/* 흰 배경 (패널 열렸을 때) */}
+          {panelOpen && (
+            <div className="pointer-events-auto absolute inset-0 border-r border-gray-200 bg-white shadow-xl" />
+          )}
+          {/* 본문 — 패널 전체를 채움. 상세가 아니면 검색바 높이만큼 내려서 시작한다. */}
+          {panelOpen && (
+            <div
+              className={`pointer-events-auto absolute inset-0 overflow-hidden ${
+                heroOverlay ? '' : 'pt-[60px]'
+              }`}
+            >
+              {children}
+            </div>
+          )}
+          {/* 검색바 — 항상 최상단에 오버레이 (이미지 위에 뜸) */}
+          <div className="pointer-events-auto absolute inset-x-0 top-0 z-30 px-3 pt-3">{searchBar}</div>
         </div>
       </div>
 

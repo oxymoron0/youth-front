@@ -5,7 +5,6 @@ import type { HousingDetail, NearbyStation } from '../types/housing';
 
 interface HousingDetailViewProps {
   homeCode: string;
-  onBack: () => void;
   onNearbyStationsLoaded: (stations: NearbyStation[]) => void;
 }
 
@@ -34,7 +33,6 @@ function formatWon(value: number | null): string {
 
 export default function HousingDetailView({
   homeCode,
-  onBack,
   onNearbyStationsLoaded,
 }: HousingDetailViewProps) {
   const [detail, setDetail] = useState<HousingDetail | null>(null);
@@ -96,19 +94,6 @@ export default function HousingDetailView({
             </svg>
           </div>
         )}
-
-        {/* 목록으로 — 이미지 위 오버레이 (Google Maps 스타일) */}
-        <button
-          onClick={onBack}
-          aria-label="목록으로"
-          className="absolute left-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow hover:bg-white"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-        </button>
-
-        {/* TODO(추후구현): 이미지 상단 검색창 */}
       </div>
 
       {/* 이름 */}

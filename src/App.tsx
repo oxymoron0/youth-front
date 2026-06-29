@@ -90,11 +90,6 @@ function AppContent() {
     addRecent({ homeCode: item.homeCode, name: housing?.home_name ?? item.name });
   }, [panToHousing, addRecent]);
 
-  const handleBackToHousingList = useCallback(() => {
-    setSelectedHomeCode(null);
-    setNearbyStations([]);
-  }, []);
-
   const handleNearbyStationsLoaded = useCallback((stations: NearbyStation[]) => {
     setNearbyStations(stations);
   }, []);
@@ -114,13 +109,18 @@ function AppContent() {
     setSelectedHomeCode((prev) => (prev ? null : prev));
   }, []);
 
-  // 검색창 X: 검색어 지우기 + 패널 닫기 (단일 출구)
+  // 검색창 X: 단일 출구. 상세가 열려 있으면 먼저 목록으로 복귀(= 기존 '<' 역할),
+  // 아니면 검색어/패널을 닫는다.
   const handleSearchExit = useCallback(() => {
+    if (selectedHomeCode) {
+      setSelectedHomeCode(null);
+      setNearbyStations([]);
+      return;
+    }
     setSearchQuery('');
-    setSelectedHomeCode(null);
-    setNearbyStations([]);
     setActive(null);
-  }, []);
+    setNearbyStations([]);
+  }, [selectedHomeCode]);
 
   const trimmed = searchQuery.trim().toLowerCase();
   const searchResults = useMemo(
@@ -152,7 +152,6 @@ function AppContent() {
         <div className="flex-1 overflow-y-auto p-3">
           <HousingDetailView
             homeCode={selectedHomeCode}
-            onBack={handleBackToHousingList}
             onNearbyStationsLoaded={handleNearbyStationsLoaded}
           />
         </div>
@@ -219,6 +218,7 @@ function AppContent() {
         active={active}
         onSelectTab={handleSelectTab}
         panelOpen={panelOpen}
+        heroOverlay={selectedHomeCode != null}
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
         onSearchExit={handleSearchExit}
