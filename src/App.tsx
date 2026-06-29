@@ -129,6 +129,12 @@ function AppContent() {
   );
   const panelOpen = selectedHomeCode != null || trimmed !== '' || active != null;
 
+  // 항목 선택 시 검색창에 그 이름을 표시한다(실제 검색어 searchQuery는 보존).
+  const selectedHousingName = selectedHomeCode
+    ? housings.find((h) => h.home_code === selectedHomeCode)?.home_name
+    : undefined;
+  const searchValue = selectedHousingName ?? searchQuery;
+
   // 검색 결과가 바뀌면 결과 마커가 모두 보이도록 지도를 맞춘다.
   // 좌측 패널(레일 72 + 패널 408)에 가리지 않도록 left margin을 크게 둔다.
   useEffect(() => {
@@ -219,7 +225,7 @@ function AppContent() {
         onSelectTab={handleSelectTab}
         panelOpen={panelOpen}
         heroOverlay={selectedHomeCode != null}
-        searchQuery={searchQuery}
+        searchQuery={searchValue}
         onSearchChange={handleSearchChange}
         onSearchExit={handleSearchExit}
         recents={recents}
