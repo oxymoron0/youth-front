@@ -142,8 +142,9 @@ export default function Sidebar({
             panelOpen ? 'pointer-events-auto border-r border-gray-200 bg-white shadow-xl' : ''
           }`}
         >
+          {/* 검색바: 패널 상단 고정 헤더. 본문(상세 이미지 등)이 바로 아래에 붙는다. */}
           <div className="pointer-events-auto px-3 pt-3">{searchBar}</div>
-          {panelOpen && <div className="mt-3 min-h-0 flex-1 overflow-hidden">{children}</div>}
+          {panelOpen && <div className="min-h-0 flex-1 overflow-hidden">{children}</div>}
         </div>
       </div>
 
